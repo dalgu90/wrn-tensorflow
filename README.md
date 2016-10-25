@@ -2,7 +2,7 @@
 
 A tensorflow implementation of Wide Residual Networks(https://arxiv.org/abs/1605.07146)
 
-
+<b>Reference</b>: The data module `cifar100_input.py` is from the TensorFlow tutorial.
 
 <b>Prerequisite</b>
 
