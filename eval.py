@@ -131,9 +131,9 @@ def train():
             preds_val, loss_value, acc_value = sess.run([network.preds, network.loss, network.acc],
                         feed_dict={network.is_train:False, images:test_images_val, labels:test_labels_val})
             test_loss += loss_value
-            for i in range(FLAGS.batch_size):
-                correct = 0 if test_labels_val[i] == preds_val[i] else 1
-                result_ll[test_labels_val[i] % FLAGS.num_classes][correct] += 1
+            for j in range(FLAGS.batch_size):
+                correct = 0 if test_labels_val[j] == preds_val[j] else 1
+                result_ll[test_labels_val[j] % FLAGS.num_classes][correct] += 1
         test_loss /= FLAGS.test_iter
 
         # Summary display & output
