@@ -45,7 +45,7 @@ class ResNet(object):
                         shortcut = tf.nn.max_pool(x, [1, strides[i-1], strides[i-1], 1],
                                                   [1, strides[i-1], strides[i-1], 1], 'VALID')
                 else:
-                    shortcut = utils._conv(x, strides[i-1], filters[i], strides[i-1], name='shortcut')
+                    shortcut = utils._conv(x, 1, filters[i], strides[i-1], name='shortcut')
 
                 # Residual
                 x = utils._conv(x, 3, filters[i], strides[i-1], name='conv_1')
