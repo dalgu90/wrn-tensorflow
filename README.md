@@ -5,11 +5,11 @@ A tensorflow implementation of Wide Residual Networks(https://arxiv.org/abs/1605
 <b>Reference</b>:  
 
 1. Original code: https://github.com/szagoruyko/wide-residual-networks  
-2. The data module `cifar100_input.py` is from [TensorFlow tutorial](https://www.tensorflow.org/versions/master/tutorials/deep_cnn/index.html).
 
 <b>Prerequisite</b>
 
-1. TensorFlow
+1. Python 3
+1. TensorFlow 1.8+
 
 <b>How To Run</b>
 
