@@ -7,9 +7,8 @@ import time
 import tensorflow as tf
 import numpy as np
 
-import cifar100_input as data_input
+import cifar100 as data_input
 import resnet
-import utils
 
 
 
@@ -88,12 +87,12 @@ def train():
 
         # Get images and labels of CIFAR-100
         with tf.variable_scope('train_image'):
-            train_images, train_labels = data_input.distorted_inputs(FLAGS.data_dir, FLAGS.batch_size)
+            train_images, train_labels = data_input.input_fn(FLAGS.data_dir, FLAGS.batch_size, train_mode=True)
         with tf.variable_scope('test_image'):
-            test_images, test_labels = data_input.inputs(True, FLAGS.data_dir, FLAGS.batch_size)
+            test_images, test_labels = data_input.input_fn(FLAGS.data_dir, FLAGS.batch_size, train_mode=False)
 
         # Build a Graph that computes the predictions from the inference model.
-        images = tf.placeholder(tf.float32, [FLAGS.batch_size, data_input.IMAGE_SIZE, data_input.IMAGE_SIZE, 3])
+        images = tf.placeholder(tf.float32, [FLAGS.batch_size, data_input.HEIGHT, data_input.WIDTH, 3])
         labels = tf.placeholder(tf.int32, [FLAGS.batch_size])
 
         # Build model
@@ -112,7 +111,7 @@ def train():
         network.build_train_op()
 
         # Summaries(training)
-        train_summary_op = tf.merge_all_summaries()
+        train_summary_op = tf.summary.merge_all()
 
         # Build an initialization operation to run below.
         init = tf.initialize_all_variables()
@@ -138,11 +137,11 @@ def train():
         tf.train.start_queue_runners(sess=sess)
         if not os.path.exists(FLAGS.train_dir):
             os.mkdir(FLAGS.train_dir)
-        summary_writer = tf.train.SummaryWriter(FLAGS.train_dir, sess.graph)
+        summary_writer = tf.summary.FileWriter(FLAGS.train_dir, sess.graph)
 
         # Training!
         test_best_acc = 0.0
-        for step in xrange(init_step, FLAGS.max_steps):
+        for step in range(init_step, FLAGS.max_steps):
             # Test
             if step % FLAGS.test_interval == 0:
                 test_loss, test_acc = 0.0, 0.0
@@ -156,7 +155,7 @@ def train():
                 test_acc /= FLAGS.test_iter
                 test_best_acc = max(test_best_acc, test_acc)
                 format_str = ('%s: (Test)     step %d, loss=%.4f, acc=%.4f')
-                print (format_str % (datetime.now(), step, test_loss, test_acc))
+                print(format_str % (datetime.now(), step, test_loss, test_acc))
 
                 test_summary = tf.Summary()
                 test_summary.value.add(tag='test/loss', simple_value=test_loss)
@@ -191,7 +190,7 @@ def train():
                 sec_per_batch = float(duration)
                 format_str = ('%s: (Training) step %d, loss=%.4f, acc=%.4f, lr=%f (%.1f examples/sec; %.3f '
                               'sec/batch)')
-                print (format_str % (datetime.now(), step, loss_value, acc_value, lr_value,
+                print(format_str % (datetime.now(), step, loss_value, acc_value, lr_value,
                                      examples_per_sec, sec_per_batch))
                 summary_writer.add_summary(train_summary_str, step)
 

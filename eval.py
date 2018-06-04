@@ -8,9 +8,8 @@ import time
 import tensorflow as tf
 import numpy as np
 
-import cifar100_input as data_input
+import cifar100 as data_input
 import resnet
-import utils
 
 
 
@@ -68,14 +67,14 @@ def train():
     with tf.Graph().as_default():
         # The CIFAR-100 dataset
         with tf.variable_scope('test_image'):
-            test_images, test_labels = data_input.inputs(not FLAGS.train_data, FLAGS.data_dir, FLAGS.batch_size)
+            test_images, test_labels = data_input.input_fn(FLAGS.data_dir, FLAGS.batch_size, train_mode=FLAGS.train_data, num_threads=1)
 
         # The class labels
         with open(os.path.join(FLAGS.data_dir, 'fine_label_names.txt')) as fd:
             classes = [temp.strip() for temp in fd.readlines()]
 
         # Build a Graph that computes the predictions from the inference model.
-        images = tf.placeholder(tf.float32, [FLAGS.batch_size, data_input.IMAGE_SIZE, data_input.IMAGE_SIZE, 3])
+        images = tf.placeholder(tf.float32, [FLAGS.batch_size, data_input.HEIGHT, data_input.WIDTH, 3])
         labels = tf.placeholder(tf.int32, [FLAGS.batch_size])
 
         # Build model
@@ -141,10 +140,10 @@ def train():
         result_total = np.sum(np.array(result_ll), axis=0)
         acc_total = float(result_total[0])/np.sum(result_total)
 
-        print 'Class    \t\t\tT\tF\tAcc.'
+        print('Class    \t\t\tT\tF\tAcc.')
         format_str = '%-31s %7d %7d %.5f'
         for i in range(FLAGS.num_classes):
-            print format_str % (classes[i], result_ll[i][0], result_ll[i][1], acc_list[i])
+            print(format_str % (classes[i], result_ll[i][0], result_ll[i][1], acc_list[i]))
         print(format_str % ('(Total)', result_total[0], result_total[1], acc_total))
 
         # Output to file(if specified)

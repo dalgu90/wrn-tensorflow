@@ -30,7 +30,7 @@ class ResNet(object):
         filters = [16, 16 * self._hp.k, 32 * self._hp.k, 64 * self._hp.k]
         strides = [1, 2, 2]
 
-        for i in xrange(1, 4, 1):
+        for i in range(1, 4):
             # First residual unit
             with tf.variable_scope('unit_%d_0' % i) as scope:
                 print('\tBuilding residual unit: %s' % scope.name)
@@ -56,7 +56,7 @@ class ResNet(object):
                 # Merge
                 x = x + shortcut
             # Other residual units
-            for j in xrange(1, self._hp.num_residual_units, 1):
+            for j in range(1, self._hp.num_residual_units):
                 with tf.variable_scope('unit_%d_%d' % (i, j)) as scope:
                     print('\tBuilding residual unit: %s' % scope.name)
                     # Shortcut
@@ -94,14 +94,14 @@ class ResNet(object):
         self.preds = tf.to_int32(tf.argmax(self._logits, 1, name='preds'))
         ones = tf.constant(np.ones([self._hp.batch_size]), dtype=tf.float32)
         zeros = tf.constant(np.zeros([self._hp.batch_size]), dtype=tf.float32)
-        correct = tf.select(tf.equal(self.preds, self._labels), ones, zeros)
+        correct = tf.where(tf.equal(self.preds, self._labels), ones, zeros)
         self.acc = tf.reduce_mean(correct, name='acc')
-        tf.scalar_summary('accuracy', self.acc)
+        tf.summary.scalar('accuracy', self.acc)
 
         # Loss & acc
-        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(x, self._labels)
+        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=x, labels=self._labels)
         self.loss = tf.reduce_mean(loss, name='cross_entropy')
-        tf.scalar_summary('cross_entropy', self.loss)
+        tf.summary.scalar('cross_entropy', self.loss)
 
 
     def build_train_op(self):
@@ -109,19 +109,19 @@ class ResNet(object):
         with tf.variable_scope('l2_loss'):
             costs = [tf.nn.l2_loss(var) for var in tf.get_collection(utils.WEIGHT_DECAY_KEY)]
             # for var in tf.get_collection(utils.WEIGHT_DECAY_KEY):
-                # tf.histogram_summary(var.op.name, var)
-            l2_loss = tf.mul(self._hp.weight_decay, tf.add_n(costs))
+                # tf.summary.histogram(var.op.name, var)
+            l2_loss = tf.multiply(self._hp.weight_decay, tf.add_n(costs))
         self._total_loss = self.loss + l2_loss
 
         # Learning rate
         self.lr = tf.train.exponential_decay(self._hp.initial_lr, self._global_step,
                                         self._hp.decay_step, self._hp.lr_decay, staircase=True)
-        tf.scalar_summary('learing_rate', self.lr)
+        tf.summary.scalar('learing_rate', self.lr)
 
         # Gradient descent step
         opt = tf.train.MomentumOptimizer(self.lr, self._hp.momentum)
         grads_and_vars = opt.compute_gradients(self._total_loss, tf.trainable_variables())
-        # print '\n'.join([t.name for t in tf.trainable_variables()])
+        # print('\n'.join([t.name for t in tf.trainable_variables()]))
         apply_grad_op = opt.apply_gradients(grads_and_vars, global_step=self._global_step)
 
         # Batch normalization moving average update
