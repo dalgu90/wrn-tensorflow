@@ -38,17 +38,22 @@ def dataset_parser(value):
     return image, label
     # return image, tf.one_hot(label, NUM_CLASSES)
 
+cifar100_mean = [129.304, 124.070, 112.434]
+cifar100_std = [68.170, 65.392, 70.418]
+
 def train_preprocess_fn(image, label):
-    image = tf.image.resize_images(image, [NEW_HEIGHT+4, NEW_WIDTH+4])
+    image = tf.image.resize_image_with_crop_or_pad(image, NEW_HEIGHT+4, NEW_WIDTH+4)
     image = tf.random_crop(image, [NEW_HEIGHT, NEW_WIDTH, 3])
     image = tf.image.random_flip_left_right(image)
-    image = tf.image.per_image_standardization(image)
+    # image = tf.image.per_image_standardization(image)
+    image = (tf.cast(image, tf.float32) - cifar100_mean) / cifar100_std
     return image, label
 
 def test_preprocess_fn(image, label):
     # image = tf.image.resize_images(image, [NEW_HEIGHT+4, NEW_WIDTH+4])
     # image = tf.random_crop(image, [NEW_HEIGHT, NEW_WIDTH, 3])
-    image = tf.image.per_image_standardization(image)
+    # image = tf.image.per_image_standardization(image)
+    image = (tf.cast(image, tf.float32) - cifar100_mean) / cifar100_std
     return image, label
 
 def read_bin_file(bin_fpath):
